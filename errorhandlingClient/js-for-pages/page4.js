@@ -1,5 +1,5 @@
 import { SERVER } from "../settings.js"
-
+import {handleHttpErrors, makeOptions} from "/fetchUtils.js"
 const SERVER_URL = SERVER + "/api/quotes"
 
 export function page4Handlers() {
@@ -12,17 +12,11 @@ export function page4Handlers() {
 function findQuote() {
   const id = getIdFromInputField()
   fetch(`${SERVER_URL}/${id}`)
-    .then(res => {
-      if (!res.ok) {
-        throw new Error("Could not find quote (")
-      }
-      return res.json()
-    })
+    .then(res => handleHttpErrors(res))
     .then(foundQuote => {
-      document.getElementById("quote").value = foundQuote.quote
-      document.getElementById("author").value = foundQuote.ref
+      document.getElementById("quote-p4").value = foundQuote.quote
+      document.getElementById("author-p4").value = foundQuote.ref
     })
-    .catch(e => alert(e.message + " (NEVER use alerts for real)"))
 }
 
 function editQuote() {
@@ -30,42 +24,26 @@ function editQuote() {
   const editedQuote = {
     id: id
   }
-  editedQuote.quote = document.getElementById("quote").value
-  editedQuote.ref = document.getElementById("author").value
+  editedQuote.quote = document.getElementById("quote-p4").value
+  editedQuote.ref = document.getElementById("author-p4").value
 
-  fetch(SERVER_URL + "/" + id, {
-    method: "PUT",
-    headers: {
-      "Accept": "application/json",
-      "Content-type": "application/json"
-    },
-    body: JSON.stringify(editedQuote)
-  })
-    .then(res => {
-      if (!res.ok) {
-        throw new Error("Error while editing the quote")
-      }
-      return res.json()
-    })
+  fetch(SERVER_URL + "/" + id, makeOptions("PUT", editedQuote))
+    .then(res => handleHttpErrors(res))
     .then(result => clearFields())
-    .catch(err => alert(err.message + " (NEVER USE ALERT FOR REAL)"))
-
-
 }
+
 async function deleteQuote() {
   const id = getIdFromInputField()
-  await fetch(SERVER_URL + "/" + id, {
-    method: "DELETE"
-  }).then(res => {
-    res.text()
-  })
+  await fetch(SERVER_URL + "/" + id, makeOptions("DELETE"))
+      .then(res => {
+    res.text()})
   clearFields()
 }
 
 function clearFields() {
   document.getElementById("quote-id").value = ""
-  document.getElementById("quote").value = ""
-  document.getElementById("author").value = ""
+  document.getElementById("quote-p4").value = ""
+  document.getElementById("author-p4").value = ""
 }
 
 function getIdFromInputField() {

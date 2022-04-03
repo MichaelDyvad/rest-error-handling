@@ -34,7 +34,7 @@ public class QuoteRestController {
   public Quote getQuote(@PathVariable int id) {
      Quote q = quotes.get(id);
      if(q==null){
-       throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No quote with provided ID found");
+       throw new RuntimeException("No quote with provided ID found");
      }
      return q;
   }
